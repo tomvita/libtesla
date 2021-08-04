@@ -255,41 +255,41 @@ namespace tsl {
          */
         static u64 stringToKeyCode(std::string &value) {
             if (strcasecmp(value.c_str(), "A")           == 0)
-                return KEY_A;
+                return HidNpadButton_A;
             else if (strcasecmp(value.c_str(), "B")      == 0)
-                return KEY_B;
+                return HidNpadButton_B;
             else if (strcasecmp(value.c_str(), "X")      == 0)
-                return KEY_X;
+                return HidNpadButton_X;
             else if (strcasecmp(value.c_str(), "Y")      == 0)
-                return KEY_Y;
+                return HidNpadButton_Y;
             else if (strcasecmp(value.c_str(), "LS")     == 0)
-                return KEY_LSTICK;
+                return HidNpadButton_StickL;
             else if (strcasecmp(value.c_str(), "RS")     == 0)
-                return KEY_RSTICK;
+                return HidNpadButton_StickR;
             else if (strcasecmp(value.c_str(), "L")      == 0)
-                return KEY_L;
+                return HidNpadButton_L;
             else if (strcasecmp(value.c_str(), "R")      == 0)
-                return KEY_R;
+                return HidNpadButton_R;
             else if (strcasecmp(value.c_str(), "ZL")     == 0)
-                return KEY_ZL;
+                return HidNpadButton_ZL;
             else if (strcasecmp(value.c_str(), "ZR")     == 0)
-                return KEY_ZR;
+                return HidNpadButton_ZR;
             else if (strcasecmp(value.c_str(), "PLUS")   == 0)
-                return KEY_PLUS;
+                return HidNpadButton_Plus;
             else if (strcasecmp(value.c_str(), "MINUS")  == 0)
-                return KEY_MINUS;
+                return HidNpadButton_Minus;
             else if (strcasecmp(value.c_str(), "DLEFT")  == 0)
-                return KEY_DLEFT;
+                return HidNpadButton_Left;
             else if (strcasecmp(value.c_str(), "DUP")    == 0)
-                return KEY_DUP;
+                return HidNpadButton_Up;
             else if (strcasecmp(value.c_str(), "DRIGHT") == 0)
-                return KEY_DRIGHT;
+                return HidNpadButton_Right;
             else if (strcasecmp(value.c_str(), "DDOWN")  == 0)
-                return KEY_DDOWN;
+                return HidNpadButton_Down;
             else if (strcasecmp(value.c_str(), "SL")     == 0)
-                return KEY_SL;
+                return HidNpadButton_LeftSL;
             else if (strcasecmp(value.c_str(), "SR")     == 0)
-                return KEY_SR;
+                return HidNpadButton_LeftSR;
             else return 0;
         }
 
@@ -1278,7 +1278,7 @@ namespace tsl {
             virtual ~ToggleListItem() {}
 
             virtual bool onClick(u64 keys) {
-                if (keys & KEY_A) {
+                if (keys & HidNpadButton_A) {
                     this->m_state = !this->m_state;
 
                     this->setState(this->m_state);
@@ -1526,7 +1526,7 @@ namespace tsl {
          * @param rightJoyStick Right joystick position
          * @return Weather or not the input has been consumed
          */
-        virtual bool handleInput(u64 keysDown, u64 keysHeld, touchPosition touchInput, JoystickPosition leftJoyStick, JoystickPosition rightJoyStick) {
+        virtual bool handleInput(u64 keysDown, u64 keysHeld, const HidTouchState &touchPos, HidAnalogStickState leftJoyStick, HidAnalogStickState rightJoyStick) {
             return false;
         }
 
@@ -1867,13 +1867,13 @@ namespace tsl {
             handled = handled | currentGui->handleInput(keysDown, keysHeld, touchPos, joyStickPosLeft, joyStickPosRight);
 
             if (!handled) {
-                if (keysDown & KEY_UP)
+                if (keysDown & HidNpadButton_AnyUp)
                     currentGui->requestFocus(currentFocus->getParent(), FocusDirection::Up);
-                else if (keysDown & KEY_DOWN)
+                else if (keysDown & HidNpadButton_AnyDown)
                     currentGui->requestFocus(currentFocus->getParent(), FocusDirection::Down);
-                else if (keysDown & KEY_LEFT)
+                else if (keysDown & HidNpadButton_AnyLeft)
                     currentGui->requestFocus(currentFocus->getParent(), FocusDirection::Left);
-                else if (keysDown & KEY_RIGHT)
+                else if (keysDown & HidNpadButton_AnyRight)
                     currentGui->requestFocus(currentFocus->getParent(), FocusDirection::Right);
             }
         }
@@ -1981,7 +1981,7 @@ namespace tsl {
 
             Event comboEvent = { 0 }, homeButtonPressEvent = { 0 }, powerButtonPressEvent = { 0 };
 
-            u64 launchCombo = KEY_L | KEY_DDOWN | KEY_RSTICK;
+            u64 launchCombo = HidNpadButton_L | HidNpadButton_Down | HidNpadButton_StickR;
             bool overlayOpen = false;
 
             std::mutex dataMutex;
@@ -2015,7 +2015,7 @@ namespace tsl {
             hlp::ini::IniData parsedConfig = hlp::ini::parseIni(configFileData);
 
             launchCombo = 0x00;
-            for (std::string key : hlp::split(parsedConfig["tesla"]["key_combo"], '+'))
+            for (std::string key : hlp::split(parsedConfig["tesla"]["HidNpadButton_combo"], '+'))
                 launchCombo |= hlp::stringToKeyCode(key);
         }
 
