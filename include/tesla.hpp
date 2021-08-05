@@ -57,9 +57,13 @@
 #define ASSERT_EXIT(x) if (R_FAILED(x)) std::exit(1)
 #define ASSERT_FATAL(x) if (Result res = x; R_FAILED(res)) fatalThrow(res)
 	
-u8 TeslaFPS = 1;
+u8 TeslaFPS = 60;
 u8 alphabackground = 0xD;
 bool FullMode = true;
+typedef struct {
+    u32 A = 0, B = 0;                                   ///< UniquePadId
+} Breeze_state;
+Breeze_state Bstate = {};
 
 using namespace std::literals::chrono_literals;
 
@@ -255,41 +259,41 @@ namespace tsl {
          */
         static u64 stringToKeyCode(std::string &value) {
             if (strcasecmp(value.c_str(), "A")           == 0)
-                return HidNpadButton_A;
+                return KEY_A;
             else if (strcasecmp(value.c_str(), "B")      == 0)
-                return HidNpadButton_B;
+                return KEY_B;
             else if (strcasecmp(value.c_str(), "X")      == 0)
-                return HidNpadButton_X;
+                return KEY_X;
             else if (strcasecmp(value.c_str(), "Y")      == 0)
-                return HidNpadButton_Y;
+                return KEY_Y;
             else if (strcasecmp(value.c_str(), "LS")     == 0)
-                return HidNpadButton_StickL;
+                return KEY_LSTICK;
             else if (strcasecmp(value.c_str(), "RS")     == 0)
-                return HidNpadButton_StickR;
+                return KEY_RSTICK;
             else if (strcasecmp(value.c_str(), "L")      == 0)
-                return HidNpadButton_L;
+                return KEY_L;
             else if (strcasecmp(value.c_str(), "R")      == 0)
-                return HidNpadButton_R;
+                return KEY_R;
             else if (strcasecmp(value.c_str(), "ZL")     == 0)
-                return HidNpadButton_ZL;
+                return KEY_ZL;
             else if (strcasecmp(value.c_str(), "ZR")     == 0)
-                return HidNpadButton_ZR;
+                return KEY_ZR;
             else if (strcasecmp(value.c_str(), "PLUS")   == 0)
-                return HidNpadButton_Plus;
+                return KEY_PLUS;
             else if (strcasecmp(value.c_str(), "MINUS")  == 0)
-                return HidNpadButton_Minus;
+                return KEY_MINUS;
             else if (strcasecmp(value.c_str(), "DLEFT")  == 0)
-                return HidNpadButton_Left;
+                return KEY_DLEFT;
             else if (strcasecmp(value.c_str(), "DUP")    == 0)
-                return HidNpadButton_Up;
+                return KEY_DUP;
             else if (strcasecmp(value.c_str(), "DRIGHT") == 0)
-                return HidNpadButton_Right;
+                return KEY_DRIGHT;
             else if (strcasecmp(value.c_str(), "DDOWN")  == 0)
-                return HidNpadButton_Down;
+                return KEY_DDOWN;
             else if (strcasecmp(value.c_str(), "SL")     == 0)
-                return HidNpadButton_LeftSL;
+                return KEY_SL;
             else if (strcasecmp(value.c_str(), "SR")     == 0)
-                return HidNpadButton_LeftSR;
+                return KEY_SR;
             else return 0;
         }
 
@@ -1278,7 +1282,7 @@ namespace tsl {
             virtual ~ToggleListItem() {}
 
             virtual bool onClick(u64 keys) {
-                if (keys & HidNpadButton_A) {
+                if (keys & KEY_A) {
                     this->m_state = !this->m_state;
 
                     this->setState(this->m_state);
@@ -1526,7 +1530,7 @@ namespace tsl {
          * @param rightJoyStick Right joystick position
          * @return Weather or not the input has been consumed
          */
-        virtual bool handleInput(u64 keysDown, u64 keysHeld, const HidTouchState &touchPos, HidAnalogStickState leftJoyStick, HidAnalogStickState rightJoyStick) {
+        virtual bool handleInput(u64 keysDown, u64 keysHeld, touchPosition touchInput, JoystickPosition leftJoyStick, JoystickPosition rightJoyStick) {
             return false;
         }
 
@@ -1867,13 +1871,13 @@ namespace tsl {
             handled = handled | currentGui->handleInput(keysDown, keysHeld, touchPos, joyStickPosLeft, joyStickPosRight);
 
             if (!handled) {
-                if (keysDown & HidNpadButton_AnyUp)
+                if (keysDown & KEY_UP)
                     currentGui->requestFocus(currentFocus->getParent(), FocusDirection::Up);
-                else if (keysDown & HidNpadButton_AnyDown)
+                else if (keysDown & KEY_DOWN)
                     currentGui->requestFocus(currentFocus->getParent(), FocusDirection::Down);
-                else if (keysDown & HidNpadButton_AnyLeft)
+                else if (keysDown & KEY_LEFT)
                     currentGui->requestFocus(currentFocus->getParent(), FocusDirection::Left);
-                else if (keysDown & HidNpadButton_AnyRight)
+                else if (keysDown & KEY_RIGHT)
                     currentGui->requestFocus(currentFocus->getParent(), FocusDirection::Right);
             }
         }
@@ -1981,7 +1985,7 @@ namespace tsl {
 
             Event comboEvent = { 0 }, homeButtonPressEvent = { 0 }, powerButtonPressEvent = { 0 };
 
-            u64 launchCombo = HidNpadButton_L | HidNpadButton_Down | HidNpadButton_StickR;
+            u64 launchCombo = KEY_L | KEY_DDOWN | KEY_RSTICK;
             bool overlayOpen = false;
 
             std::mutex dataMutex;
@@ -2015,7 +2019,7 @@ namespace tsl {
             hlp::ini::IniData parsedConfig = hlp::ini::parseIni(configFileData);
 
             launchCombo = 0x00;
-            for (std::string key : hlp::split(parsedConfig["tesla"]["HidNpadButton_combo"], '+'))
+            for (std::string key : hlp::split(parsedConfig["tesla"]["key_combo"], '+'))
                 launchCombo |= hlp::stringToKeyCode(key);
         }
 
@@ -2109,7 +2113,9 @@ namespace tsl {
             while (shData->running) {
                 if (R_SUCCEEDED(eventWait(&shData->homeButtonPressEvent, 100'000'000))) {
                     eventClear(&shData->homeButtonPressEvent);
-
+                    TeslaFPS = 5;
+                    Bstate.A = 123;
+                    Bstate.B = 456;
                     if (shData->overlayOpen) {
                         tsl::Overlay::get()->hide();
                         shData->overlayOpen = false;
