@@ -80,7 +80,15 @@
         "stop_token": "cpp",
         "numbers": "cpp",
         "span": "cpp",
-        "dmntcht.h": "c"
+        "dmntcht.h": "c",
+        "filesystem": "cpp",
+        "semaphore": "cpp",
+        "barrier": "cpp",
+        "coroutine": "cpp",
+        "source_location": "cpp",
+        "latch": "cpp",
+        "syncstream": "cpp",
+        "switch.h": "c"
     },
     "C_Cpp.default.includePath": [
         "include"
