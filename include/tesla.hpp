@@ -1682,7 +1682,7 @@ namespace tsl {
                 this->m_disableNextAnimation = false;
             }
             else {
-                this->m_fadeInAnimationPlaying = false;
+                this->m_fadeInAnimationPlaying = true;
                 this->m_animationCounter = 0;
             }
 
@@ -1699,7 +1699,7 @@ namespace tsl {
                 this->m_disableNextAnimation = false;
             }
             else {
-                this->m_fadeOutAnimationPlaying = false;
+                this->m_fadeOutAnimationPlaying = true;
                 this->m_animationCounter = 5;
             }
 
