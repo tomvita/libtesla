@@ -543,7 +543,7 @@ namespace tsl {
                         maxX = std::max(currX, maxX);
 
                         currX = x;
-                        currY += fontSize;
+                        currY += fontSize+3;
 
                         continue;
                     }
