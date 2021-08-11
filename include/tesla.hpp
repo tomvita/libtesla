@@ -2113,9 +2113,9 @@ namespace tsl {
             while (shData->running) {
                 if (R_SUCCEEDED(eventWait(&shData->homeButtonPressEvent, 100'000'000))) {
                     eventClear(&shData->homeButtonPressEvent);
-                    TeslaFPS = 5;
-                    Bstate.A = 123;
-                    Bstate.B = 456;
+                    // TeslaFPS = 5;
+                    // Bstate.A = 123;
+                    // Bstate.B = 456;
                     if (shData->overlayOpen) {
                         tsl::Overlay::get()->hide();
                         shData->overlayOpen = false;
