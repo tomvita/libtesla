@@ -326,6 +326,7 @@ namespace tsl {
          */
         class Renderer final {
         public:
+            u32 m_maxX = 0, m_maxY= 0;
             Renderer& operator=(Renderer&) = delete;
 
             friend class tsl::Overlay;
@@ -556,6 +557,9 @@ namespace tsl {
                 } while (i < stringLength);
 
                 maxX = std::max(currX, maxX);
+
+                m_maxX = std::max(m_maxX, maxX);
+                m_maxY = std::max(m_maxY, currY);
 
                 return { maxX - x, currY - y };
             }
