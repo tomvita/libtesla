@@ -527,6 +527,10 @@ namespace tsl {
 
                     if (stbtt_FindGlyphIndex(&this->m_extFont, currCharacter))
                         currFont = &this->m_extFont;
+                    else if (stbtt_FindGlyphIndex(&this->m_CFont, currCharacter)) 
+                        currFont = &this->m_CFont;
+                    else if (stbtt_FindGlyphIndex(&this->m_KFont, currCharacter))
+                        currFont = &this->m_KFont;
                     else
                         currFont = &this->m_stdFont;
 
@@ -601,7 +605,7 @@ namespace tsl {
             bool m_scissoring = false;
             u16 m_scissorBounds[4];
 
-            stbtt_fontinfo m_stdFont, m_extFont;
+            stbtt_fontinfo m_stdFont, m_extFont, m_CFont, m_KFont;
 
             static inline float s_opacity = 1.0F;
 
@@ -762,7 +766,7 @@ namespace tsl {
             Result initFonts() {
                 Result res;
 
-                static PlFontData stdFontData, extFontData;
+                static PlFontData stdFontData, extFontData, chFontData, koFontData;
 
                 // Nintendo's default font
                 if(R_FAILED(res = plGetSharedFontByType(&stdFontData, PlSharedFontType_Standard)))
@@ -777,6 +781,20 @@ namespace tsl {
 
                 fontBuffer = reinterpret_cast<u8*>(extFontData.address);
                 stbtt_InitFont(&this->m_extFont, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));
+
+                // ChineseSimplified font 
+                if(R_FAILED(res = plGetSharedFontByType(&chFontData, PlSharedFontType_ChineseSimplified)))
+                    return res;
+
+                fontBuffer = reinterpret_cast<u8*>(chFontData.address);
+                stbtt_InitFont(&this->m_CFont, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));
+
+                // KO font 
+                if(R_FAILED(res = plGetSharedFontByType(&koFontData, PlSharedFontType_KO)))
+                    return res;
+
+                fontBuffer = reinterpret_cast<u8*>(koFontData.address);
+                stbtt_InitFont(&this->m_KFont, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));
 
                 return res;
             }
